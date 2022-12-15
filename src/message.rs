@@ -38,6 +38,25 @@ impl<I> NetlinkMessage<I> {
     pub fn into_parts(self) -> (NetlinkHeader, NetlinkPayload<I>) {
         (self.header, self.payload)
     }
+
+    /// Craft a new empty overrun netlink message
+    ///
+    /// This kind of fake, artifical, message is used to signal the application
+    /// that a buffer overrun happened at the userspace socket level. Such
+    /// overruns typically happen with multicast sockets and a surge of Netlink
+    /// traffick.
+    pub fn new_overrun() -> Self {
+        Self {
+            header: NetlinkHeader {
+                length: std::mem::size_of::<NetlinkHeader>() as u32,
+                message_type: NLMSG_OVERRUN,
+                flags: 0,
+                sequence_number: 0,
+                port_number: 0,
+            },
+            payload: NetlinkPayload::Overrun(Vec::new()),
+        }
+    }
 }
 
 impl<I> NetlinkMessage<I>
